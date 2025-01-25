@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"onlineshop/handler"
+	"onlineshop/middleware"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -40,16 +41,16 @@ func main() {
 	//products
 	r.GET("/api/v1/products", handler.ListProducts(db)) //show list Product
 	r.GET("/api/v1/products/:id", handler.GetProduct(db))
-	r.POST("/api/v1/checkout")
+	r.POST("/api/v1/checkout", handler.CheckoutOrder(db))
 
 	//orders
-	r.POST("/api/v1/orders/:id/confirm")
-	r.GET("/api/v1/orders/:id")
+	r.POST("/api/v1/orders/:id/confirm", handler.ConfirmOrder(db))
+	r.GET("/api/v1/orders/:id", handler.GetOrder(db))
 
 	//admin
-	r.POST("/admin/products", handler.CreateProduct(db))
-	r.PUT("/admin/products/:id", handler.UpdateProduct(db))
-	r.DELETE("/admin/products/:id", handler.DeleteProduct(db))
+	r.POST("/admin/products", middleware.AdminOnly(), handler.CreateProduct(db))
+	r.PUT("/admin/products/:id", middleware.AdminOnly(), handler.UpdateProduct(db))
+	r.DELETE("/admin/products/:id", middleware.AdminOnly(), handler.DeleteProduct(db))
 
 	server := &http.Server{
 		Addr: ":8080",
